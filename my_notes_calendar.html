@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Notes Calendar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f0e8;
+    --surface: #fffdf7;
+    --surface2: #f0ebe0;
+    --ink: #1a1714;
+    --ink2: #5c5448;
+    --ink3: #9c9285;
+    --accent: #c0572a;
+    --accent-light: #f5e8e2;
+    --accent2: #2a6c4a;
+    --accent2-light: #e2f0e8;
+    --border: #ddd5c5;
+    --today-bg: #fef3ee;
+    --has-note: #2a6c4a;
+    --shadow: rgba(26,23,20,0.08);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+    color: var(--ink3);
+    margin-bottom: 2rem;
+    letter-spacing: 0.5px;
+  }
+
+  .calendar-card {
+    background: var(--surface);
+    border-radius: 18px;
+    box-shadow: 0 4px 32px var(--shadow);
+    width: 100%;
+    max-width: 560px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+  }
+
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  .month-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .nav-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--ink2);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 0.5rem;
+  }
+  .weekday {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--ink3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.3rem 0;
+  }
+
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 400;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.12s, color 0.12s, transform 0.1s;
+    color: var(--ink);
+    border: 1px solid transparent;
+    user-select: none;
+  }
+  .day:hover { background: var(--accent-light); color: var(--accent); transform: scale(1.08); border-color: var(--accent); }
+  .day.empty { cursor: default; }
+  .day.empty:hover { background: transparent; color: inherit; transform: none; border-color: transparent; }
+  .day.today { background: var(--today-bg); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+  .day.has-note::after {
+    content: '';
+    position: absolute;
+    bottom: 5px; left: 50%; transform: translateX(-50%);
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--has-note);
+  }
+  .day.has-note.today::after { background: var(--accent); }
+
+  .legend {
+    display: flex;
+    gap: 1.2rem;
+    margin-top: 1rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--ink3);
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* Modal overlay */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,23,20,0.45);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 8px 40px rgba(26,23,20,0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-date {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .modal-weekday { font-size: 0.8rem; color: var(--ink3); margin-top: 1px; }
+
+  .close-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--ink2);
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.12s;
+  }
+  .close-btn:hover { background: var(--border); }
+
+  .modal-body { padding: 1.2rem 1.5rem; flex: 1; overflow-y: auto; }
+
+  .note-textarea {
+    width: 100%;
+    min-height: 220px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--ink);
+    background: var(--bg);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .note-textarea:focus { border-color: var(--accent2); background: #fff; }
+  .note-textarea::placeholder { color: var(--ink3); }
+
+  .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.5rem 1.2rem;
+    border-top: 1px solid var(--border);
+    gap: 0.8rem;
+  }
+
+  .char-count { font-size: 0.75rem; color: var(--ink3); }
+
+  .btn-row { display: flex; gap: 0.6rem; }
+
+  .btn-delete {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #c0392b;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.12s;
+  }
+  .btn-delete:hover { background: #fef0ef; }
+
+  .btn-save {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 0.45rem 1.2rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.12s, transform 0.1s;
+  }
+  .btn-save:hover { background: #a8481e; }
+  .btn-save:active { transform: scale(0.97); }
+
+  .save-status {
+    font-size: 0.75rem;
+    color: var(--accent2);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .save-status.visible { opacity: 1; }
+
+  .notes-summary {
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    width: 100%;
+    max-width: 560px;
+    margin-top: 1.2rem;
+    overflow: hidden;
+  }
+  .notes-summary-header {
+    padding: 0.9rem 1.2rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--ink);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .notes-count {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    color: var(--ink3);
+    font-weight: 400;
+  }
+  .notes-list { max-height: 220px; overflow-y: auto; }
+  .note-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    padding: 0.75rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .note-item:last-child { border-bottom: none; }
+  .note-item:hover { background: var(--accent-light); }
+  .note-item-date {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+    padding-top: 1px;
+    min-width: 72px;
+  }
+  .note-item-preview {
+    font-size: 0.82rem;
+    color: var(--ink2);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .empty-notes {
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--ink3);
+  }
+</style>
+</head>
+<body>
+
+<h1>My Calendar Notes</h1>
+<p class="subtitle">Click any day to write your note &mdash; saved locally in your browser</p>
+
+<div class="calendar-card">
+  <div class="cal-header">
+    <button class="nav-btn" id="prev">&#8592;</button>
+    <div class="month-title" id="month-title"></div>
+    <button class="nav-btn" id="next">&#8594;</button>
+  </div>
+  <div class="weekdays">
+    <div class="weekday">Sun</div><div class="weekday">Mon</div>
+    <div class="weekday">Tue</div><div class="weekday">Wed</div>
+    <div class="weekday">Thu</div><div class="weekday">Fri</div>
+    <div class="weekday">Sat</div>
+  </div>
+  <div class="days-grid" id="days-grid"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent); border: 1.5px solid var(--accent);"></div> Today</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--has-note);"></div> Has a note</div>
+  </div>
+</div>
+
+<div class="notes-summary" id="notes-summary">
+  <div class="notes-summary-header">
+    Recent Notes
+    <span class="notes-count" id="notes-count">0 notes</span>
+  </div>
+  <div class="notes-list" id="notes-list">
+    <div class="empty-notes">No notes yet. Click a day to start writing!</div>
+  </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-date" id="modal-date"></div>
+        <div class="modal-weekday" id="modal-weekday"></div>
+      </div>
+      <button class="close-btn" id="close-modal">Close</button>
+    </div>
+    <div class="modal-body">
+      <textarea class="note-textarea" id="note-textarea" placeholder="Write your thoughts, tasks, ideas... anything you want for this day."></textarea>
+    </div>
+    <div class="modal-footer">
+      <span class="save-status" id="save-status">&#10003; Saved!</span>
+      <div class="btn-row">
+        <button class="btn-delete" id="btn-delete">Delete note</button>
+        <button class="btn-save" id="btn-save">Save note</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'myCalendarNotes_v1';
+  const WEEKDAYS_LONG = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  let notes = {};
+  let currentYear, currentMonth;
+  let openDateKey = null;
+
+  function loadNotes() {
+    try { notes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { notes = {}; }
+  }
+  function saveNotes() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  }
+  function dateKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+  function renderCalendar() {
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === currentYear && today.getMonth() === currentMonth;
+    document.getElementById('month-title').textContent = `${MONTHS[currentMonth]} ${currentYear}`;
+
+    const grid = document.getElementById('days-grid');
+    grid.innerHTML = '';
+
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const blank = document.createElement('div');
+      blank.className = 'day empty';
+      grid.appendChild(blank);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const div = document.createElement('div');
+      div.className = 'day';
+      div.textContent = d;
+      const key = dateKey(currentYear, currentMonth, d);
+      if (isCurrentMonth && d === today.getDate()) div.classList.add('today');
+      if (notes[key] && notes[key].trim()) div.classList.add('has-note');
+      div.addEventListener('click', () => openModal(currentYear, currentMonth, d));
+      grid.appendChild(div);
+    }
+    renderSummary();
+  }
+
+  function renderSummary() {
+    const list = document.getElementById('notes-list');
+    const countEl = document.getElementById('notes-count');
+    const entries = Object.entries(notes)
+      .filter(([,v]) => v && v.trim())
+      .sort(([a],[b]) => b.localeCompare(a))
+      .slice(0, 20);
+
+    countEl.textContent = `${entries.length} note${entries.length !== 1 ? 's' : ''}`;
+
+    if (!entries.length) {
+      list.innerHTML = '<div class="empty-notes">No notes yet. Click a day to start writing!</div>';
+      return;
+    }
+    list.innerHTML = entries.map(([key, text]) => {
+      const [y,m,d] = key.split('-');
+      const dt = new Date(+y, +m-1, +d);
+      const label = `${MONTHS[dt.getMonth()].slice(0,3)} ${+d}, ${y}`;
+      const preview = text.trim().replace(/\n/g,' ').slice(0, 80);
+      return `<div class="note-item" data-key="${key}">
+        <div class="note-item-date">${label}</div>
+        <div class="note-item-preview">${preview}${text.length > 80 ? '…' : ''}</div>
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('.note-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const [y,m,d] = el.dataset.key.split('-');
+        currentYear = +y; currentMonth = +m - 1;
+        renderCalendar();
+        openModal(+y, +m-1, +d);
+      });
+    });
+  }
+
+  function openModal(y, m, d) {
+    openDateKey = dateKey(y, m, d);
+    const dt = new Date(y, m, d);
+    document.getElementById('modal-date').textContent = `${MONTHS[m]} ${d}, ${y}`;
+    document.getElementById('modal-weekday').textContent = WEEKDAYS_LONG[dt.getDay()];
+    document.getElementById('note-textarea').value = notes[openDateKey] || '';
+    document.getElementById('save-status').classList.remove('visible');
+    document.getElementById('modal-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('note-textarea').focus(), 80);
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    openDateKey = null;
+  }
+
+  function saveNote() {
+    if (!openDateKey) return;
+    const val = document.getElementById('note-textarea').value;
+    if (val.trim()) notes[openDateKey] = val;
+    else delete notes[openDateKey];
+    saveNotes();
+    renderCalendar();
+    const st = document.getElementById('save-status');
+    st.classList.add('visible');
+    setTimeout(() => st.classList.remove('visible'), 2000);
+  }
+
+  function deleteNote() {
+    if (!openDateKey) return;
+    delete notes[openDateKey];
+    saveNotes();
+    renderCalendar();
+    closeModal();
+  }
+
+  // Init
+  loadNotes();
+  const now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
+  renderCalendar();
+
+  document.getElementById('prev').addEventListener('click', () => {
+    currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    renderCalendar();
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderCalendar();
+  });
+  document.getElementById('close-modal').addEventListener('click', closeModal);
+  document.getElementById('btn-save').addEventListener('click', saveNote);
+  document.getElementById('btn-delete').addEventListener('click', deleteNote);
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveNote(); }
+  });
+</script>
+</body>
+</html>
