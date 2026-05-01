@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Notes Calendar</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -26,6 +26,23 @@
     --shadow: rgba(26,23,20,0.08);
   }
 
+  body.dark-mode {
+    --bg: #1a1714;
+    --surface: #2a2520;
+    --surface2: #3a342c;
+    --ink: #f5f0e8;
+    --ink2: #c5bfb3;
+    --ink3: #8b8577;
+    --accent: #ff7a4d;
+    --accent-light: #4a2e23;
+    --accent2: #5a9d6f;
+    --accent2-light: #1f3d2a;
+    --border: #4a4238;
+    --today-bg: #3a2620;
+    --has-note: #5a9d6f;
+    --shadow: rgba(0,0,0,0.3);
+  }
+
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--bg);
@@ -35,15 +52,68 @@
     flex-direction: column;
     align-items: center;
     padding: 2rem 1rem;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    gap: 1rem;
+  }
+
+  .theme-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    padding: 0;
+  }
+  .theme-toggle:hover { background: var(--surface); }
+
+  .main-container {
+    display: flex;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .left-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    flex: 1;
+    min-width: 300px;
+    max-width: 560px;
+  }
+
+  .right-section {
+    flex: 1;
+    min-width: 300px;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
   }
 
   h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
-    font-weight: 600;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.6rem;
+    font-weight: 700;
     color: var(--ink);
     margin-bottom: 0.25rem;
-    letter-spacing: -0.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .subtitle {
@@ -71,10 +141,12 @@
   }
 
   .month-title {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 1.4rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--ink);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
   }
 
   .nav-btn {
@@ -288,13 +360,15 @@
   }
   .notes-summary-header {
     padding: 0.9rem 1.2rem;
-    font-family: 'Playfair Display', serif;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 1rem;
     color: var(--ink);
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
   .notes-count {
     font-family: 'DM Sans', sans-serif;
@@ -336,39 +410,382 @@
     font-size: 0.82rem;
     color: var(--ink3);
   }
+
+  /* Important Notes Section */
+  .important-notes {
+    background: var(--surface);
+    border-radius: 18px;
+    box-shadow: 0 4px 32px var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    max-height: 600px;
+  }
+
+  .important-notes-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .important-notes-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .pomodoro-card {
+    background: var(--surface);
+    border-radius: 18px;
+    box-shadow: 0 4px 32px var(--shadow);
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+  }
+
+  .pomodoro-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .pomodoro-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .pomodoro-badge {
+    font-size: 0.75rem;
+    color: var(--accent2);
+    background: var(--accent2-light);
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .pomodoro-settings {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    margin-bottom: 0.95rem;
+    flex-wrap: wrap;
+  }
+
+  .pomodoro-settings label {
+    font-size: 0.78rem;
+    color: var(--ink3);
+    white-space: nowrap;
+  }
+
+  .pomodoro-input {
+    width: 84px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: var(--bg);
+    outline: none;
+  }
+
+  .pomodoro-input:focus {
+    border-color: var(--accent2);
+    background: var(--surface);
+  }
+
+  .pomodoro-apply-btn {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.55rem 0.85rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--surface2);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .pomodoro-apply-btn:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  .pomodoro-display {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 0.85rem;
+  }
+
+  .pomodoro-progress {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--surface2);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .pomodoro-progress-bar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: inherit;
+    transform-origin: left center;
+    transition: width 0.2s linear;
+  }
+
+  .pomodoro-controls {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .pomodoro-btn {
+    flex: 1;
+    min-width: 92px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--surface2);
+    transition: transform 0.1s, background 0.15s, color 0.15s;
+  }
+
+  .pomodoro-btn:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  .pomodoro-btn.primary {
+    background: var(--accent2);
+    color: #fff;
+    border-color: var(--accent2);
+  }
+
+  .pomodoro-btn.primary:hover {
+    background: #1f5434;
+    color: #fff;
+  }
+
+  .pomodoro-status {
+    margin-top: 0.85rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--ink3);
+  }
+
+  .important-notes-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  .important-note-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: background 0.1s;
+  }
+
+  .important-note-item:hover {
+    background: var(--accent-light);
+  }
+
+  .important-note-item:last-child {
+    border-bottom: none;
+  }
+
+  .important-note-text {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--ink);
+    word-break: break-word;
+  }
+
+  .important-note-delete {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--ink3);
+    font-size: 1.2rem;
+    padding: 0;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .important-note-delete:hover {
+    color: #c0392b;
+  }
+
+  .important-notes-input {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.8rem;
+  }
+
+  .important-note-textarea {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--bg);
+    resize: none;
+    outline: none;
+    transition: border-color 0.15s;
+    height: 60px;
+  }
+
+  .important-note-textarea:focus {
+    border-color: var(--accent2);
+    background: var(--surface);
+  }
+
+  .important-note-textarea::placeholder {
+    color: var(--ink3);
+  }
+
+  .important-note-add-btn {
+    background: var(--accent2);
+    border: 1px solid var(--accent2);
+    border-radius: 8px;
+    padding: 0.8rem;
+    cursor: pointer;
+    color: #fff;
+    font-size: 1rem;
+    transition: background 0.12s;
+    font-weight: 500;
+    flex-shrink: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .important-note-add-btn:hover {
+    background: #1f5434;
+  }
+
+  .important-notes-empty {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+  }
 </style>
 </head>
 <body>
 
-<h1>My Calendar Notes</h1>
-<p class="subtitle">Click any day to write your note &mdash; saved locally in your browser</p>
-
-<div class="calendar-card">
-  <div class="cal-header">
-    <button class="nav-btn" id="prev">&#8592;</button>
-    <div class="month-title" id="month-title"></div>
-    <button class="nav-btn" id="next">&#8594;</button>
+<div class="header">
+  <div>
+    <h1>My Calendar Notes</h1>
+    <p class="subtitle">Click any day to write your note &mdash; saved locally in your browser</p>
   </div>
-  <div class="weekdays">
-    <div class="weekday">Sun</div><div class="weekday">Mon</div>
-    <div class="weekday">Tue</div><div class="weekday">Wed</div>
-    <div class="weekday">Thu</div><div class="weekday">Fri</div>
-    <div class="weekday">Sat</div>
-  </div>
-  <div class="days-grid" id="days-grid"></div>
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:var(--accent); border: 1.5px solid var(--accent);"></div> Today</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--has-note);"></div> Has a note</div>
-  </div>
+  <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">🌙</button>
 </div>
 
-<div class="notes-summary" id="notes-summary">
-  <div class="notes-summary-header">
-    Recent Notes
-    <span class="notes-count" id="notes-count">0 notes</span>
+<div class="main-container">
+  <div class="left-section">
+    <div class="pomodoro-card">
+      <div class="pomodoro-header">
+        <h2>Pomodoro</h2>
+        <span class="pomodoro-badge" id="pomodoro-status-label">Focus time</span>
+      </div>
+      <div class="pomodoro-settings">
+        <label for="pomodoro-duration-input">Length</label>
+        <input class="pomodoro-input" id="pomodoro-duration-input" type="number" min="1" max="180" step="1" value="25">
+        <button class="pomodoro-apply-btn" id="pomodoro-apply-btn">Apply</button>
+      </div>
+      <div class="pomodoro-display" id="pomodoro-display">25:00</div>
+      <div class="pomodoro-progress" aria-hidden="true">
+        <div class="pomodoro-progress-bar" id="pomodoro-progress-bar"></div>
+      </div>
+      <div class="pomodoro-controls">
+        <button class="pomodoro-btn primary" id="pomodoro-start-btn">Start</button>
+        <button class="pomodoro-btn" id="pomodoro-pause-btn">Pause</button>
+        <button class="pomodoro-btn" id="pomodoro-reset-btn">Reset</button>
+      </div>
+      <div class="pomodoro-status" id="pomodoro-status">25 minute focus session</div>
+    </div>
+
+    <div class="calendar-card">
+      <div class="cal-header">
+        <button class="nav-btn" id="prev">&#8592;</button>
+        <div class="month-title" id="month-title"></div>
+        <button class="nav-btn" id="next">&#8594;</button>
+      </div>
+      <div class="weekdays">
+        <div class="weekday">Sun</div><div class="weekday">Mon</div>
+        <div class="weekday">Tue</div><div class="weekday">Wed</div>
+        <div class="weekday">Thu</div><div class="weekday">Fri</div>
+        <div class="weekday">Sat</div>
+      </div>
+      <div class="days-grid" id="days-grid"></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent); border: 1.5px solid var(--accent);"></div> Today</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--has-note);"></div> Has a note</div>
+      </div>
+    </div>
+
+    <div class="notes-summary" id="notes-summary">
+      <div class="notes-summary-header">
+        Recent Notes
+        <span class="notes-count" id="notes-count">0 notes</span>
+      </div>
+      <div class="notes-list" id="notes-list">
+        <div class="empty-notes">No notes yet. Click a day to start writing!</div>
+      </div>
+    </div>
   </div>
-  <div class="notes-list" id="notes-list">
-    <div class="empty-notes">No notes yet. Click a day to start writing!</div>
+
+  <div class="right-section">
+    <div class="important-notes">
+      <div class="important-notes-header">
+        <h2>Important Notes</h2>
+      </div>
+      <div class="important-notes-list" id="important-notes-list">
+        <div class="important-notes-empty">Add your important notes that aren't related to any specific day</div>
+      </div>
+      <div class="important-notes-input">
+        <textarea class="important-note-textarea" id="important-note-textarea" placeholder="Add an important note..."></textarea>
+        <button class="important-note-add-btn" id="important-note-add-btn">+</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -397,13 +814,177 @@
 
 <script>
   const STORAGE_KEY = 'myCalendarNotes_v1';
+  const IMPORTANT_NOTES_KEY = 'importantNotes_v1';
+  const DARK_MODE_KEY = 'darkMode_v1';
+  const POMODORO_DURATION_KEY = 'pomodoroDurationMinutes_v1';
+  const POMODORO_DEFAULT_MINUTES = 25;
   const WEEKDAYS_LONG = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   let notes = {};
+  let importantNotes = [];
+  let pomodoroDurationMinutes = POMODORO_DEFAULT_MINUTES;
+  let pomodoroTotalSeconds = POMODORO_DEFAULT_MINUTES * 60;
+  let pomodoroRemainingSeconds = pomodoroTotalSeconds;
+  let pomodoroIntervalId = null;
   let currentYear, currentMonth;
   let openDateKey = null;
 
+  // Dark mode
+  function loadDarkMode() {
+    const isDark = localStorage.getItem(DARK_MODE_KEY) === 'true';
+    if (isDark) {
+      document.body.classList.add('dark-mode');
+      document.getElementById('theme-toggle').textContent = '☀️';
+    } else {
+      document.body.classList.remove('dark-mode');
+      document.getElementById('theme-toggle').textContent = '🌙';
+    }
+  }
+
+  function toggleDarkMode() {
+    const isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem(DARK_MODE_KEY, isDark);
+    document.getElementById('theme-toggle').textContent = isDark ? '☀️' : '🌙';
+  }
+
+  // Important notes
+  function loadImportantNotes() {
+    try { importantNotes = JSON.parse(localStorage.getItem(IMPORTANT_NOTES_KEY)) || []; } catch(e) { importantNotes = []; }
+  }
+
+  function saveImportantNotes() {
+    localStorage.setItem(IMPORTANT_NOTES_KEY, JSON.stringify(importantNotes));
+  }
+
+  function renderImportantNotes() {
+    const list = document.getElementById('important-notes-list');
+    if (!importantNotes.length) {
+      list.innerHTML = '<div class="important-notes-empty">Add your important notes that aren\'t related to any specific day</div>';
+      return;
+    }
+    list.innerHTML = importantNotes.map((note, idx) => `
+      <div class="important-note-item">
+        <div class="important-note-text">${note}</div>
+        <button class="important-note-delete" data-idx="${idx}">✕</button>
+      </div>
+    `).join('');
+    list.querySelectorAll('.important-note-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = +e.target.dataset.idx;
+        importantNotes.splice(idx, 1);
+        saveImportantNotes();
+        renderImportantNotes();
+      });
+    });
+  }
+
+  function addImportantNote() {
+    const textarea = document.getElementById('important-note-textarea');
+    const text = textarea.value.trim();
+    if (text) {
+      importantNotes.unshift(text);
+      saveImportantNotes();
+      textarea.value = '';
+      renderImportantNotes();
+    }
+  }
+
+  function loadPomodoroSettings() {
+    const storedMinutes = Number(localStorage.getItem(POMODORO_DURATION_KEY));
+    if (Number.isFinite(storedMinutes) && storedMinutes > 0) {
+      pomodoroDurationMinutes = Math.min(180, Math.max(1, Math.round(storedMinutes)));
+    }
+    pomodoroTotalSeconds = pomodoroDurationMinutes * 60;
+    if (pomodoroRemainingSeconds > pomodoroTotalSeconds || pomodoroRemainingSeconds <= 0) {
+      pomodoroRemainingSeconds = pomodoroTotalSeconds;
+    }
+  }
+
+  function savePomodoroSettings() {
+    localStorage.setItem(POMODORO_DURATION_KEY, String(pomodoroDurationMinutes));
+  }
+
+  function applyPomodoroDuration() {
+    const input = document.getElementById('pomodoro-duration-input');
+    const nextMinutes = Number.parseInt(input.value, 10);
+
+    if (!Number.isFinite(nextMinutes) || nextMinutes < 1) {
+      input.value = String(pomodoroDurationMinutes);
+      return;
+    }
+
+    pomodoroDurationMinutes = Math.min(180, nextMinutes);
+    pomodoroTotalSeconds = pomodoroDurationMinutes * 60;
+    pomodoroRemainingSeconds = pomodoroTotalSeconds;
+    savePomodoroSettings();
+    renderPomodoro();
+  }
+
+  // Pomodoro timer
+  function formatPomodoroTime(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  function renderPomodoro() {
+    document.getElementById('pomodoro-display').textContent = formatPomodoroTime(pomodoroRemainingSeconds);
+    document.getElementById('pomodoro-progress-bar').style.width = `${(pomodoroRemainingSeconds / pomodoroTotalSeconds) * 100}%`;
+    document.getElementById('pomodoro-duration-input').value = String(pomodoroDurationMinutes);
+
+    const statusLabel = document.getElementById('pomodoro-status-label');
+    const statusText = document.getElementById('pomodoro-status');
+    const startButton = document.getElementById('pomodoro-start-btn');
+
+    if (pomodoroRemainingSeconds === 0) {
+      statusLabel.textContent = 'Completed';
+      statusText.textContent = 'Session complete. Reset to start another round.';
+      startButton.textContent = 'Start';
+      return;
+    }
+
+    statusLabel.textContent = pomodoroIntervalId ? 'Running' : 'Focus time';
+    statusText.textContent = `${pomodoroDurationMinutes} minute focus session`;
+    startButton.textContent = pomodoroIntervalId ? 'Running' : 'Start';
+  }
+
+  function startPomodoro() {
+    if (pomodoroIntervalId) return;
+    if (pomodoroRemainingSeconds <= 0) pomodoroRemainingSeconds = pomodoroTotalSeconds;
+    pomodoroIntervalId = setInterval(() => {
+      if (pomodoroRemainingSeconds > 0) {
+        pomodoroRemainingSeconds -= 1;
+        renderPomodoro();
+      }
+      if (pomodoroRemainingSeconds <= 0) {
+        clearInterval(pomodoroIntervalId);
+        pomodoroIntervalId = null;
+        pomodoroRemainingSeconds = 0;
+        renderPomodoro();
+      }
+    }, 1000);
+    renderPomodoro();
+  }
+
+  function pausePomodoro() {
+    if (pomodoroIntervalId) {
+      clearInterval(pomodoroIntervalId);
+      pomodoroIntervalId = null;
+      renderPomodoro();
+    }
+  }
+
+  function resetPomodoro() {
+    if (pomodoroIntervalId) {
+      clearInterval(pomodoroIntervalId);
+      pomodoroIntervalId = null;
+    }
+    pomodoroRemainingSeconds = pomodoroTotalSeconds;
+    renderPomodoro();
+  }
+
+  // Calendar notes
   function loadNotes() {
     try { notes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { notes = {}; }
   }
@@ -513,12 +1094,29 @@
   }
 
   // Init
+  loadDarkMode();
   loadNotes();
+  loadImportantNotes();
+  loadPomodoroSettings();
   const now = new Date();
   currentYear = now.getFullYear();
   currentMonth = now.getMonth();
   renderCalendar();
+  renderImportantNotes();
+  renderPomodoro();
 
+  // Event listeners
+  document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
+  document.getElementById('pomodoro-apply-btn').addEventListener('click', applyPomodoroDuration);
+  document.getElementById('pomodoro-start-btn').addEventListener('click', startPomodoro);
+  document.getElementById('pomodoro-pause-btn').addEventListener('click', pausePomodoro);
+  document.getElementById('pomodoro-reset-btn').addEventListener('click', resetPomodoro);
+  document.getElementById('pomodoro-duration-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyPomodoroDuration();
+    }
+  });
   document.getElementById('prev').addEventListener('click', () => {
     currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; }
     renderCalendar();
@@ -530,6 +1128,13 @@
   document.getElementById('close-modal').addEventListener('click', closeModal);
   document.getElementById('btn-save').addEventListener('click', saveNote);
   document.getElementById('btn-delete').addEventListener('click', deleteNote);
+  document.getElementById('important-note-add-btn').addEventListener('click', addImportantNote);
+  document.getElementById('important-note-textarea').addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      addImportantNote();
+    }
+  });
   document.getElementById('modal-overlay').addEventListener('click', e => {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
