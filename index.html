@@ -707,6 +707,160 @@
     justify-content: center;
     min-height: 150px;
   }
+
+  /* Today Todo List Section */
+  .today-todo-section {
+    background: var(--surface);
+    border-radius: 18px;
+    box-shadow: 0 4px 32px var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.2rem;
+  }
+
+  .todo-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .todo-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .todo-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    max-height: 250px;
+  }
+
+  .todo-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: background 0.1s;
+  }
+
+  .todo-item:hover {
+    background: var(--accent-light);
+  }
+
+  .todo-item:last-child {
+    border-bottom: none;
+  }
+
+  .todo-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: var(--accent2);
+  }
+
+  .todo-text {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--ink);
+    word-break: break-word;
+    transition: opacity 0.15s;
+  }
+
+  .todo-item input[type="checkbox"]:checked ~ .todo-text {
+    opacity: 0.5;
+    text-decoration: line-through;
+  }
+
+  .todo-delete {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--ink3);
+    font-size: 1.2rem;
+    padding: 0;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .todo-delete:hover {
+    color: #c0392b;
+  }
+
+  .todo-input {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.8rem;
+  }
+
+  .todo-textarea {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--bg);
+    resize: none;
+    outline: none;
+    transition: border-color 0.15s;
+    height: 60px;
+  }
+
+  .todo-textarea:focus {
+    border-color: var(--accent2);
+    background: var(--surface);
+  }
+
+  .todo-textarea::placeholder {
+    color: var(--ink3);
+  }
+
+  .todo-add-btn {
+    background: var(--accent2);
+    border: 1px solid var(--accent2);
+    border-radius: 8px;
+    padding: 0.8rem;
+    cursor: pointer;
+    color: #fff;
+    font-size: 1rem;
+    transition: background 0.12s;
+    font-weight: 500;
+    flex-shrink: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .todo-add-btn:hover {
+    background: #1f5434;
+  }
+
+  .todo-empty {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+  }
 </style>
 </head>
 <body>
@@ -786,6 +940,19 @@
         <button class="important-note-add-btn" id="important-note-add-btn">+</button>
       </div>
     </div>
+
+    <div class="today-todo-section">
+      <div class="todo-header">
+        <h2>Today's Todo List</h2>
+      </div>
+      <div class="todo-list" id="todo-list">
+        <div class="todo-empty">Add tasks to complete today</div>
+      </div>
+      <div class="todo-input">
+        <textarea class="todo-textarea" id="todo-textarea" placeholder="Add a task..."></textarea>
+        <button class="todo-add-btn" id="todo-add-btn">+</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -817,12 +984,14 @@
   const IMPORTANT_NOTES_KEY = 'importantNotes_v1';
   const DARK_MODE_KEY = 'darkMode_v1';
   const POMODORO_DURATION_KEY = 'pomodoroDurationMinutes_v1';
+  const TODAY_TODOS_KEY = 'todayTodos_v1';
   const POMODORO_DEFAULT_MINUTES = 25;
   const WEEKDAYS_LONG = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   let notes = {};
   let importantNotes = [];
+  let todayTodos = [];
   let pomodoroDurationMinutes = POMODORO_DEFAULT_MINUTES;
   let pomodoroTotalSeconds = POMODORO_DEFAULT_MINUTES * 60;
   let pomodoroRemainingSeconds = pomodoroTotalSeconds;
@@ -887,6 +1056,77 @@
       saveImportantNotes();
       textarea.value = '';
       renderImportantNotes();
+    }
+  }
+
+  // Today's Todo List
+  function loadTodayTodos() {
+    try { todayTodos = JSON.parse(localStorage.getItem(TODAY_TODOS_KEY)) || []; } catch(e) { todayTodos = []; }
+  }
+
+  function saveTodayTodos() {
+    localStorage.setItem(TODAY_TODOS_KEY, JSON.stringify(todayTodos));
+  }
+
+  function renderTodayTodos() {
+    const list = document.getElementById('todo-list');
+    if (!todayTodos.length) {
+      list.innerHTML = '<div class="todo-empty">Add tasks to complete today</div>';
+      return;
+    }
+    list.innerHTML = todayTodos.map((todo, idx) => `
+      <div class="todo-item">
+        <input type="checkbox" class="todo-checkbox" data-idx="${idx}" ${todo.done ? 'checked' : ''}>
+        <div class="todo-text">${todo.text}</div>
+        <button class="todo-delete" data-idx="${idx}">✕</button>
+      </div>
+    `).join('');
+    list.querySelectorAll('.todo-checkbox').forEach(btn => {
+      btn.addEventListener('change', (e) => {
+        const idx = +e.target.dataset.idx;
+        todayTodos[idx].done = e.target.checked;
+        saveTodayTodos();
+        renderTodayTodos();
+      });
+    });
+    list.querySelectorAll('.todo-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = +e.target.dataset.idx;
+        todayTodos.splice(idx, 1);
+        saveTodayTodos();
+        renderTodayTodos();
+      });
+    });
+  }
+
+  function addTodayTodo() {
+    const textarea = document.getElementById('todo-textarea');
+    const text = textarea.value.trim();
+    if (text) {
+      todayTodos.push({ text: text, done: false });
+      saveTodayTodos();
+      textarea.value = '';
+      renderTodayTodos();
+    }
+  }
+
+  // Pomodoro sound
+  function playPomodoroSound() {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioContext.currentTime;
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      oscillator.start(now);
+      oscillator.stop(now + 0.5);
+    } catch(e) {
+      console.log('Audio playback not available');
     }
   }
 
@@ -962,6 +1202,7 @@
         pomodoroIntervalId = null;
         pomodoroRemainingSeconds = 0;
         renderPomodoro();
+        playPomodoroSound();
       }
     }, 1000);
     renderPomodoro();
@@ -1097,12 +1338,14 @@
   loadDarkMode();
   loadNotes();
   loadImportantNotes();
+  loadTodayTodos();
   loadPomodoroSettings();
   const now = new Date();
   currentYear = now.getFullYear();
   currentMonth = now.getMonth();
   renderCalendar();
   renderImportantNotes();
+  renderTodayTodos();
   renderPomodoro();
 
   // Event listeners
@@ -1133,6 +1376,13 @@
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       addImportantNote();
+    }
+  });
+  document.getElementById('todo-add-btn').addEventListener('click', addTodayTodo);
+  document.getElementById('todo-textarea').addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      addTodayTodo();
     }
   });
   document.getElementById('modal-overlay').addEventListener('click', e => {
