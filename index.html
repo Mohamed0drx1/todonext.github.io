@@ -31,8 +31,8 @@
 
   body.dark-mode {
     --bg: #121212;
-    --surface: #1b1b1b;
-    --surface2: #252525;
+    --surface: rgba(27,27,27,0.78);
+    --surface2: rgba(37,37,37,0.72);
     --ink: #f4f4f1;
     --ink2: #ccccca;
     --ink3: #9a9a97;
@@ -51,6 +51,8 @@
     background: var(--bg);
     color: var(--ink);
     min-height: 100vh;
+    position: relative;
+    isolation: isolate;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -306,12 +308,12 @@
     font-size: 0.95rem;
     line-height: 1.7;
     color: var(--ink);
-    background: var(--bg);
+    background: var(--surface);
     resize: vertical;
     outline: none;
     transition: border-color 0.15s;
   }
-  .note-textarea:focus { border-color: var(--accent); background: #fff; }
+  .note-textarea:focus { border-color: var(--accent); background: var(--surface); }
   .note-textarea::placeholder { color: var(--ink3); }
 
   .modal-footer {
@@ -678,7 +680,7 @@
     font-size: 0.9rem;
     line-height: 1.5;
     color: var(--ink);
-    background: var(--bg);
+    background: var(--surface);
     resize: none;
     outline: none;
     transition: border-color 0.15s;
@@ -956,7 +958,7 @@
   }
 </style>
 </head>
-<body>
+<body class="dark-mode">
 
 <div class="header">
   <div>
@@ -1094,7 +1096,8 @@
 
   // Dark mode
   function loadDarkMode() {
-    const isDark = localStorage.getItem(DARK_MODE_KEY) === 'true';
+    const stored = localStorage.getItem(DARK_MODE_KEY);
+    const isDark = stored === null ? true : stored === 'true';
     if (isDark) {
       document.body.classList.add('dark-mode');
       document.getElementById('theme-toggle').textContent = 'L';
@@ -1102,6 +1105,7 @@
       document.body.classList.remove('dark-mode');
       document.getElementById('theme-toggle').textContent = 'D';
     }
+    if (stored === null) localStorage.setItem(DARK_MODE_KEY, 'true');
   }
 
   function toggleDarkMode() {
@@ -1488,3 +1492,4 @@
 </script>
 </body>
 </html>
+
